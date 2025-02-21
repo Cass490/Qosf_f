@@ -9,11 +9,19 @@ class angle_encode:
     def encode(self, data):
       states=[]
       for datapoint in data:
-        initial_state=np.zeros( self.n_sites, dtype=complex)
-        for i in range (self.n_sites):
-            theta=datapoint[i]*np.pi/2
-            initial_state[i] = np.cos(theta) + 1j*np.sin(theta)
-        states.append(initial_state)
+        # Start with the state of the first qubit
+            initial_state = np.array([np.cos(datapoint[0] * np.pi / 2) - 1j * np.sin(datapoint[0] * np.pi / 2),
+                                     np.sin(datapoint[0] * np.pi / 2) + 1j * np.cos(datapoint[0] * np.pi / 2)])
+            #1j:python way of representing complex numbers
+            # Combine with the states of the remaining qubits using the Kronecker product
+            for i in range(1, self.n_sites):
+                theta = datapoint[i] * np.pi / 2
+                state_i = np.array([np.cos(theta) - 1j * np.sin(theta),
+                                    np.sin(theta) + 1j * np.cos(theta)])
+                initial_state = np.kron(initial_state, state_i) #kronecker product
+
+            states.append(initial_state)
+        
       return states
 
 class amp_encode:
@@ -33,6 +41,6 @@ class amp_encode:
             # Check for normalization.  Use np.isclose for floating-point comparison.
         if not np.isclose(np.sum(datapoint**2), 1.0):
                 raise ValueError("Input data for AmplitudeEncoding must be normalized.")
-        padded_datapoint = np.pad(datapoint, (0, 2**self.n_sites - len(datapoint)))
+        padded_datapoint = np.pad(datapoint, (0, max_features - n_features))
         states.append(padded_datapoint)
       return states
