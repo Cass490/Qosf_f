@@ -41,6 +41,6 @@ class amp_encode:
             # Check for normalization.  Use np.isclose for floating-point comparison.
         if not np.isclose(np.sum(datapoint**2), 1.0):
                 raise ValueError("Input data for AmplitudeEncoding must be normalized.")
-        padded_datapoint = np.pad(datapoint, (0, max_features - n_features))
+        padded_datapoint = np.pad(datapoint, (0, self.max_features - n_features))
         states.append(padded_datapoint)
       return states
