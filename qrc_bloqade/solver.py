@@ -20,4 +20,4 @@ class BloqadeSolver:
             A bloqade.Result object containing the simulation results.
         """
 
-        return bloqade.simulate(init_state, hamiltonian=hamiltonian, duration=duration, steps=steps)
+        return bloqade.ir.simulation.simulate(init_state, hamiltonian=hamiltonian, duration=duration, steps=steps)

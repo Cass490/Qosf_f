@@ -1,5 +1,4 @@
 import bloqade
-from bloqade import spin_operators
 import numpy as np
 
 
@@ -14,7 +13,7 @@ class ZReadout:
        #Generates single-qubit Z measurements as readout operators.
         readouts = []
         for i in range(n_sites):
-            readouts.append(bloqade.spin_operators.spin_z(i))
+            readouts.append(bloqade.ir.pauli_z(i))
         return readouts 
 
     def measure(self, evolved_results, readout_indices=None):
@@ -28,7 +27,7 @@ class ZReadout:
         for result in evolved_results:
             expectation_values = []
             for i in self.readout_indices:  # Only measure specified qubits
-                expectation_values.append(bloqade.expectation(result.states[-1], spin_operators.sigma_z(i)).real)
+                expectation_values.append(bloqade.expectation(result.states[-1],  bloqade.ir.pauli_z(i)).real)
             features.append(expectation_values)
 
         return np.array(features)
