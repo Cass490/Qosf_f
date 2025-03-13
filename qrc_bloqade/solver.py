@@ -1,11 +1,8 @@
-import bloqade
+from scipy.linalg import expm
 import numpy as np
-from bloqade.emulate.ir import emulator
+
 
 class BloqadeSolver:
-    """
-    A solver that uses the bloqade library to perform the simulation.
-    """
 
     def with_initial_state(self, state_vector, num_qubits):
         """
@@ -33,35 +30,20 @@ class BloqadeSolver:
         state_vector /= norm
 
         return state_vector
+    def evolve_state( self, init_state, hamiltonian, duration ,steps):
+       
+       dt = duration / steps
+       U= expm(-1j * hamiltonian * dt)
+       state= init_state
+       for _ in range(steps):
+            state = U @ state
+       return state
 
     def simulate(self, init_state, hamiltonian, duration, steps, n_qubits):
-        """
-        Runs the Bloqade emulator with a given Hamiltonian and initial state.
-        
-        Args:
-        - init_state (list or np.ndarray): Initial quantum state.
-        - hamiltonian: The Bloqade Hamiltonian.
-        - duration (float): Total simulation time.
-        - steps (int): Number of time steps.
-
-        Returns:
-        - Emulator result from Bloqade.
-        """
-        # Calculate time step
-        dt = duration / steps
-        
-        # Create a time array for simulation
-        times = np.linspace(0, duration, steps)
-        print("Initial state size:", len(init_state))
-
-        # Ensure the initial state is properly formatted
-          # Calculate qubit count from state size
-        formatted_state = self.with_initial_state(init_state, n_qubits)
-        
-        # Run the Bloqade emulator (assuming it accepts the initial state directly)
-        result = emulator.run(hamiltonian, initial_state=formatted_state)
-        
-        return result
+      
+        new_state= self.with_initial_state( init_state, n_qubits)
+        final_state= self.evolve_state(new_state, hamiltonian, duration, steps)
+        return final_state
 
 
 
