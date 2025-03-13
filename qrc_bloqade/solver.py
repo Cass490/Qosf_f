@@ -30,6 +30,7 @@ class BloqadeSolver:
         state_vector /= norm
 
         return state_vector
+ 
     def evolve_state( self, init_state, hamiltonian, duration ,steps):
        
        dt = duration / steps
@@ -44,6 +45,5 @@ class BloqadeSolver:
         new_state= self.with_initial_state( init_state, n_qubits)
         final_state= self.evolve_state(new_state, hamiltonian, duration, steps)
         return final_state
-
 
 

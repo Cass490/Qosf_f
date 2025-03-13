@@ -4,7 +4,7 @@ class angle_encode:
     def __init__(self, n_sites):
         self.n_sites = n_sites
         ''' Each classical value is encoded into a quantum state using rotation angles:
-    |ψ⟩ = cos(πx/2)|0⟩ + i*sin(πx/2)|1⟩'''
+    |ψ⟩ = cos(πx/2)|0⟩ + sin(πx/2)|1⟩'''
 
     def encode(self, data):
       states=[]
@@ -12,18 +12,19 @@ class angle_encode:
             if len(datapoint) != self.n_sites:
               raise ValueError(f"Expected {self.n_sites} features, got {len(datapoint)}")
         # Start with the state of the first qubit
-            initial_state = np.array([np.cos(datapoint[0] * np.pi / 2) - 1j * np.sin(datapoint[0] * np.pi / 2),
-                                     np.sin(datapoint[0] * np.pi / 2) + 1j * np.cos(datapoint[0] * np.pi / 2)])
+            initial_state = np.array([np.cos(datapoint[0] * np.pi / 2), 
+                                 np.sin(datapoint[0] * np.pi / 2)])
             #1j:python way of representing complex numbers
             # Combine with the states of the remaining qubits using the Kronecker product
             for i in range(1, self.n_sites):
                 theta = datapoint[i] * np.pi / 2
-                state_i = np.array([np.cos(theta) - 1j * np.sin(theta),
-                                    np.sin(theta) + 1j * np.cos(theta)])
-                initial_state = np.kron(initial_state, state_i) #kronecker product
+                state_i = np.array([np.cos(theta), np.sin(theta)])
+                initial_state = np.kron(initial_state, state_i)#kronecker product
             if len(initial_state) != 2**self.n_sites:
                raise ValueError(f"Encoded state has incorrect size: {len(initial_state)} (expected {2**self.n_sites})")
-
+            norm = np.sum(np.abs(initial_state)**2)
+            if not np.isclose(norm, 1.0, rtol=1e-5, atol=1e-5):
+              initial_state = initial_state / np.sqrt(norm)
             states.append(initial_state)
         
       return np.array(states)
