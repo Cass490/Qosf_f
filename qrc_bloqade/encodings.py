@@ -9,6 +9,8 @@ class angle_encode:
     def encode(self, data):
       states=[]
       for datapoint in data:
+            if len(datapoint) != self.n_sites:
+              raise ValueError(f"Expected {self.n_sites} features, got {len(datapoint)}")
         # Start with the state of the first qubit
             initial_state = np.array([np.cos(datapoint[0] * np.pi / 2) - 1j * np.sin(datapoint[0] * np.pi / 2),
                                      np.sin(datapoint[0] * np.pi / 2) + 1j * np.cos(datapoint[0] * np.pi / 2)])
@@ -19,10 +21,12 @@ class angle_encode:
                 state_i = np.array([np.cos(theta) - 1j * np.sin(theta),
                                     np.sin(theta) + 1j * np.cos(theta)])
                 initial_state = np.kron(initial_state, state_i) #kronecker product
+            if len(initial_state) != 2**self.n_sites:
+               raise ValueError(f"Encoded state has incorrect size: {len(initial_state)} (expected {2**self.n_sites})")
 
             states.append(initial_state)
         
-      return states
+      return np.array(states)
 
 class amp_encode:
     def __init__(self, n_sites):
@@ -33,6 +37,9 @@ class amp_encode:
       for datapoint in data:
         n_features = len(datapoint)
         if n_features > self.max_features:
+            raise ValueError(f"Amplitude encoding requires at most {self.max_features} features, got {n_features}")
+
+        if n_features > self.max_features:
                 raise ValueError(
                     f"Amplitude encoding requires at most {self.max_features} features, "
                     f"got {n_features}"
@@ -42,5 +49,7 @@ class amp_encode:
         if not np.isclose(np.sum(datapoint**2), 1.0):
                 raise ValueError("Input data for AmplitudeEncoding must be normalized.")
         padded_datapoint = np.pad(datapoint, (0, self.max_features - n_features))
+        if len(padded_datapoint) != self.max_features:
+            raise ValueError(f"Encoded state has incorrect size: {len(padded_datapoint)} (expected {self.max_features})")
         states.append(padded_datapoint)
-      return states
+      return np.array(states)

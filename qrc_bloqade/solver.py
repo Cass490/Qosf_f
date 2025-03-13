@@ -34,7 +34,7 @@ class BloqadeSolver:
 
         return state_vector
 
-    def simulate(self, init_state, hamiltonian, duration, steps):
+    def simulate(self, init_state, hamiltonian, duration, steps, n_qubits):
         """
         Runs the Bloqade emulator with a given Hamiltonian and initial state.
         
@@ -52,10 +52,11 @@ class BloqadeSolver:
         
         # Create a time array for simulation
         times = np.linspace(0, duration, steps)
-        
+        print("Initial state size:", len(init_state))
+
         # Ensure the initial state is properly formatted
-        num_qubits = int(np.log2(len(init_state)))  # Calculate qubit count from state size
-        formatted_state = self.with_initial_state(init_state, num_qubits)
+          # Calculate qubit count from state size
+        formatted_state = self.with_initial_state(init_state, n_qubits)
         
         # Run the Bloqade emulator (assuming it accepts the initial state directly)
         result = emulator.run(hamiltonian, initial_state=formatted_state)
