@@ -40,6 +40,6 @@ class rydberg:
             if i < self.n_sites - 1:
                 H += self.V * self.construct_operator(self.sigma_z, [i, i + 1])
 
-        return H.toarray()  # Convert sparse matrix to dense (optional)
+        return H.toarray()  
 
 

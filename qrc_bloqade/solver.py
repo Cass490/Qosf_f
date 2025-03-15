@@ -5,16 +5,7 @@ import numpy as np
 class BloqadeSolver:
 
     def with_initial_state(self, state_vector, num_qubits):
-        """
-        Custom function to create an initial state vector.
-        
-        Args:
-        - state_vector (list or np.ndarray): The initial quantum state.
-        - num_qubits (int): Number of qubits in the system.
-
-        Returns:
-        - np.ndarray: The normalized initial state vector.
-        """
+       
         # Ensure the state is a NumPy array
         state_vector = np.array(state_vector, dtype=complex)
 
