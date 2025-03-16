@@ -1,0 +1,31 @@
+[33m43f7212[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mbackup-main[m[33m)[m HEAD@{0}: checkout: moving from hope to main
+[33m8df9a4a[m[33m ([m[1;31morigin/hope[m[33m, [m[1;31morigin/backup-hope[m[33m, [m[1;32mhope[m[33m, [m[1;32mbackup-hope[m[33m)[m HEAD@{1}: commit: amp encode done
+[33m2755217[m HEAD@{2}: commit: angle encoding works with poor performance
+[33m42354c3[m HEAD@{3}: commit: removed bloqade from solver.py
+[33m0cb628f[m HEAD@{4}: commit: loop over sample instead of whole batch
+[33mb6bedea[m HEAD@{5}: commit: readout form scratch\
+[33m4384c4e[m HEAD@{6}: commit: updates after a week
+[33m80f6c10[m HEAD@{7}: commit: new file
+[33m2b7e7e9[m HEAD@{8}: commit: new file
+[33me77aabc[m HEAD@{9}: commit: fixed a self.
+[33m05bbf8d[m HEAD@{10}: commit: fixed a little
+[33ma72245b[m HEAD@{11}: commit: fixed a little
+[33mfa40200[m HEAD@{12}: commit: hamiltonian fixed
+[33m7cf71ba[m HEAD@{13}: commit: 3 files added
+[33m5d53456[m HEAD@{14}: commit: strat from scratch
+[33m139be73[m HEAD@{15}: checkout: moving from hope to hope
+[33m139be73[m HEAD@{16}: commit: hellow
+[33mc60b1a9[m HEAD@{17}: checkout: moving from c60b1a9818dab45b4faa56777e7dce28eb71b759 to hope
+[33mc60b1a9[m HEAD@{18}: checkout: moving from main to c60b1a9818dab45b4faa56777e7dce28eb71b759
+[33m43f7212[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mbackup-main[m[33m)[m HEAD@{19}: checkout: moving from 86e84cd7114d4ffa9ba9f2812914d3e1943ed446 to main
+[33m86e84cd[m HEAD@{20}: commit: fixed
+[33m4b6e247[m HEAD@{21}: checkout: moving from main to 4b6e24720574ade31e188ea0bef23b5449aeb749
+[33m43f7212[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mbackup-main[m[33m)[m HEAD@{22}: commit: env issues
+[33mc60b1a9[m HEAD@{23}: commit: add
+[33m4b6e247[m HEAD@{24}: commit: tests
+[33m2280850[m HEAD@{25}: commit: basic files
+[33m2fbe395[m HEAD@{26}: commit: base class
+[33me5df7e1[m HEAD@{27}: commit: adding base class first
+[33mfe9e8ce[m HEAD@{28}: commit: restructuring
+[33m00c021b[m HEAD@{29}: Branch: renamed refs/heads/master to refs/heads/main
+[33m00c021b[m HEAD@{31}: commit (initial): first
