@@ -321,7 +321,7 @@ def analyze_chaos(dataset_name, generator_func, **kwargs):
         plt.ylabel('Autocorrelation')
         
         plt.tight_layout()
-        plt.savefig(f'{dataset_name.lower().replace(" ", "_")}_autocorrelation.png')
+        #plt.savefig(f'{dataset_name.lower().replace(" ", "_")}_autocorrelation.png')
         plt.show()
     
     return X, y
