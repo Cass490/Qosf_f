@@ -75,7 +75,7 @@ class BloqadeSolver:
                 state = U @ state
                 all_states.append(state.copy())
         
-            return all_states
+        return all_states
      else:
         # Original behavior: return only final state
         state = new_state
@@ -90,25 +90,12 @@ class BloqadeSolver:
         
         return state
     
-    def simulate_with_history(self, init_state, hamiltonian, duration, steps, n_qubits):
-     all_states = []
-     new_state = self.with_initial_state(init_state, n_qubits)
-     all_states.append(new_state.copy())
-    
-    # For each step, run the simulation up to that point
-     step_duration = duration / steps
-     for i in range(1, steps + 1):
-        current_duration = i * step_duration
-        # Get state at this time point
-        state = self.simulate(
-            init_state,
-            hamiltonian=hamiltonian,
-            duration=current_duration,
-            steps=i,  # Use exactly i steps to reach this point
-            n_qubits=n_qubits,
-            return_all_steps=True
-        )
-        all_states.append(state.copy())
-    
-     return all_states
-
+    def simulate_with_history(self, init_state, hamiltonian, duration, steps, n_qubits, return_history=True):
+      return self.simulate(
+        init_state,
+        hamiltonian=hamiltonian,
+        duration=duration,
+        steps=steps,
+        n_qubits=n_qubits,
+        return_all_steps=True
+    )

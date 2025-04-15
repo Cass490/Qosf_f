@@ -32,18 +32,22 @@ def zz_expectation(state, qubit_i, qubit_j, num_qubits):
 
 class EnhancedReadout:
     def __init__(self, n_sites, readout_indices=None, correlation_pairs=None, 
-                 time_points=None, include_zz=True, include_multi_time=False):
+                 time_points=None, include_zz=True, include_multi_time=False, return_history=True):
     
         self.n_sites = n_sites
         self.readout_indices = readout_indices if readout_indices is not None else list(range(n_sites))
         self.include_zz = include_zz
         self.include_multi_time = include_multi_time
-        
+        self.time_points = time_points
         # Default correlation pairs: nearest neighbors
         if correlation_pairs is None and include_zz:
-            self.correlation_pairs = [(i, i+1) for i in range(n_sites-1)]
+            self.correlation_pairs = []
+            # Nearest neighbors
+            for i in range(n_sites-1):
+                self.correlation_pairs.append((i, i+1))
+            # Next-nearest neighbors (every other pair)
             for i in range(n_sites-2):
-                if i % 2 == 0: 
+                if i % 2 == 0:
                     self.correlation_pairs.append((i, i+2))
         else:
             self.correlation_pairs = correlation_pairs if correlation_pairs else []
@@ -65,159 +69,33 @@ class EnhancedReadout:
         return features
         
     def measure(self, evolved_results, num_qubits):
-   
-        print("DEBUG: Entering measure method")
-        print(f"Type of evolved_results: {type(evolved_results)}")
-        print(f"Length of evolved_results: {len(evolved_results)}")
+         features=[]
+         for state_history in evolved_results:
+             sample_features=[]
+             if self.include_multi_time and self.time_points is not None:
+                 for time_index in self.time_points:
+                     if time_index < len(state_history):
+                            #getting state at this time point
+                            state = state_history[time_index]
+                            
+                            sample_features.extend(self.measure_single_state(state, num_qubits))
+                     else:
+                          # This time point doesn't exist in the history
+                         print(f"DEBUG: Time point {time_index} exceeds history length {len(state_history)}")
+                         padding_size=len(self.readout_indices)
+                         if self.include_zz:
+                             padding_size += len(self.correlation_pairs)
+                        
+                         sample_features.extend([0]*padding_size)
+             else:
+                    final_state = state_history[-1] #last state in the history
+                    sample_features.extend(self.measure_single_state(final_state, num_qubits))
+                    print(f"DEBUG: Sample feature vector has length {len(sample_features)}")
+             features.append(sample_features)
+         features_array = np.array(features)
+         print(f"DEBUG: Final features array shape: {features_array.shape}")
+         return features_array
+      
     
-    # Very early check of the first element
-        if len(evolved_results) > 0:
-          first_elem = evolved_results[0]
-          print(f"Type of first element: {type(first_elem)}")
-        
-          if isinstance(first_elem, list):
-            print(f"Length of first inner list: {len(first_elem)}")
-            
-            if len(first_elem) > 0:
-                first_state = first_elem[0]
-                print(f"Type of first state: {type(first_state)}")
-                
-                if hasattr(first_state, 'shape'):
-                    print(f"Shape of first state: {first_state.shape}")
+             
     
-    # Deliberately raise an exception to stop and show all debug info
-  
-        print(f"Type of evolved_results: {type(evolved_results)}")
-        print(f"Length of evolved_results: {len(evolved_results)}")
-        if len(evolved_results) > 0:
-         print(f"Type of first element: {type(evolved_results[0])}")
-         print(f"Length of first element: {len(evolved_results[0])}")
-        if len(evolved_results[0]) > 0:
-            print(f"Shape of state at [0][0]: {evolved_results[0][0].shape if hasattr(evolved_results[0][0], 'shape') else 'No shape attribute'}")
-        if len(evolved_results) > 0:
-         print(f"Type of first element: {type(evolved_results[0])}")
-        
-        # Check if we have a state vector or a list
-        if hasattr(evolved_results[0], 'shape'):
-            print(f"Shape of first state: {evolved_results[0].shape}")
-            is_direct_state_list = True
-        else:
-            print(f"Length of first element: {len(evolved_results[0])}")
-            is_direct_state_list = False
-            
-            if len(evolved_results[0]) > 0:
-                print(f"Type of nested element: {type(evolved_results[0][0])}")
-                if hasattr(evolved_results[0][0], 'shape'):
-                    print(f"Shape of first nested state: {evolved_results[0][0].shape}")
-    
-        features = []
-        
-        if not self.include_multi_time:
-          if len(evolved_results) > 0 and not isinstance(evolved_results[0], list):
-            # Simplified case: measure only the final states
-            for state in evolved_results:
-                sample_features = self.measure_single_state(state, num_qubits)
-                features.append(sample_features)
-          else:
-           for batch in evolved_results:
-             batch_features=[]
-             for state in batch:
-                sample_features = self.measure_single_state(state, num_qubits)
-                batch_features.append(sample_features)
-             features.append(batch_features)
-        else:
-            for time_series in evolved_results:
-                sample_features = []
-        
-                # If time_points specified, measure at those points
-                if self.time_points is not None:
-                    for t_idx in self.time_points:
-                      if t_idx < len(time_series):
-                        state = time_series[t_idx]
-                        time_features = self.measure_single_state(state, num_qubits)
-                        sample_features.extend(time_features)
-                      else:
-                          print(f"Time index {t_idx} is out of range for time series of length {len(time_series)}")
-                else:
-                    # Otherwise measure at the final time
-                  if len(time_series) > 0:
-                    state = time_series[-1]
-                    sample_features = self.measure_single_state(state, num_qubits)
-                    
-                features.append(sample_features)
-                
-        return np.array(features)
-    
-class ZReadout:
-    def __init__(self, n_sites, readout_indices=None):
-        self.n_sites = n_sites
-        self.readout_indices = readout_indices if readout_indices is not None else list(range(self.n_sites))
-    
-    def measure(self, evolved_results, num_qubits):
-        """Measure the expectation value of each spin in the Z-basis."""
-        features = []
-        for result in evolved_results:
-            expectation_values = [z_expectation(result, i, num_qubits) for i in self.readout_indices]
-            features.append(expectation_values)
-        return np.array(features)
-
-class ZZReadout:
-    def __init__(self, n_sites, correlation_pairs=None):
-    
-        self.n_sites = n_sites
-        
-        # Default: measure correlations between nearest neighbors
-        if correlation_pairs is None:
-            self.correlation_pairs = [(i, i+1) for i in range(n_sites-1)]
-        else:
-            self.correlation_pairs = correlation_pairs
-    
-    def measure(self, evolved_results, num_qubits):
-        """Measure ZZ correlations between specified qubit pairs."""
-        features = []
-        for result in evolved_results:
-            correlation_values = [zz_expectation(result, i, j, num_qubits) 
-                                 for i, j in self.correlation_pairs]
-            features.append(correlation_values)
-        return np.array(features)
-
-class MultiTimeReadout:
-    def __init__(self, n_sites, readout_indices=None, time_points=None, include_zz=False):
-        
-        self.n_sites = n_sites
-        self.readout_indices = readout_indices if readout_indices is not None else list(range(n_sites))
-        self.time_points = time_points  # If None, will use all time points
-        self.include_zz = include_zz
-        
-        if include_zz:
-            # Default correlation pairs: nearest neighbors
-            self.correlation_pairs = [(i, i+1) for i in range(n_sites-1)]
-    
-    def measure(self, evolved_time_series, num_qubits):
-        features = []
-        
-        for time_series in evolved_time_series:
-            sample_features = []
-            
-            # Determine which time points to use
-            if self.time_points is not None:
-                time_indices = self.time_points
-            else:
-                time_indices = range(len(time_series))
-            
-            # For each time point
-            for t_idx in time_indices:
-                state = time_series[t_idx]
-                
-                # Measure Z expectations
-                for qubit_idx in self.readout_indices:
-                    sample_features.append(z_expectation(state, qubit_idx, num_qubits))
-                
-                # Measure ZZ correlations if enabled
-                if self.include_zz:
-                    for i, j in self.correlation_pairs:
-                        sample_features.append(zz_expectation(state, i, j, num_qubits))
-            
-            features.append(sample_features)
-            
-        return np.array(features)
