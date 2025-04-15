@@ -114,7 +114,7 @@ class global_encode:
                     else:
                         state= np.kron(state, qubit_state)
                 if len(state) < self.max_features:
-                    padded_state= np.zeros(self.mex_dimension, dtype=complex)
+                    padded_state= np.zeros(self.max_features, dtype=complex)
                     padded_state[:len(state)] = state   
                     state= padded_state
                 initial_states[i] = state

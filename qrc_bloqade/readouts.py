@@ -86,7 +86,7 @@ class EnhancedReadout:
                     print(f"Shape of first state: {first_state.shape}")
     
     # Deliberately raise an exception to stop and show all debug info
-        raise ValueError("DEBUG: Stopping to inspect input structure")
+  
         print(f"Type of evolved_results: {type(evolved_results)}")
         print(f"Length of evolved_results: {len(evolved_results)}")
         if len(evolved_results) > 0:
