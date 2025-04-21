@@ -43,3 +43,47 @@ class rydberg:
         return H.toarray()  
 
 
+# Add this function to modify the rydberg class
+def update_hamiltonian_class():
+    """
+    Update the rydberg class to handle array-valued omega parameters for local encoding.
+    
+    Call this function before running the LSTM test to ensure the hamiltonian class
+    can handle local encoding.
+    """
+    from qrc_bloqade.hamiltonian import rydberg
+    
+    # Create a new method to handle array-valued omega
+    def construct_hamiltonian_updated(self):
+        """Builds the full Hamiltonian for the system, supporting array-valued omega."""
+        from scipy.sparse import csr_matrix
+        import numpy as np
+        
+        H = csr_matrix((2**self.n_sites, 2**self.n_sites), dtype=complex)
+
+        # Check if omega is array-like (from local_encode)
+        if isinstance(self.omega, (list, np.ndarray)):
+            # Apply site-specific omega values
+            if len(self.omega) != self.n_sites:
+                raise ValueError(f"Expected {self.n_sites} omega values, got {len(self.omega)}")
+                
+            for i in range(self.n_sites):
+                H += self.omega[i] * self.construct_operator(self.sigma_x, [i])
+        else:
+            # Apply same omega to all sites
+            for i in range(self.n_sites):
+                H += self.omega * self.construct_operator(self.sigma_x, [i])
+        
+        # Apply detuning and interaction terms
+        for i in range(self.n_sites):
+            H += self.detuning_values[i] * self.construct_operator(self.sigma_z, [i])
+            
+            if i < self.n_sites - 1:
+                H += self.V * self.construct_operator(self.sigma_z, [i, i + 1])
+
+        return H.toarray()
+    
+    # Update the class method
+    rydberg.construct_hamiltonian = construct_hamiltonian_updated
+    
+    print("Rydberg hamiltonian class updated to support array-valued omega parameters.")

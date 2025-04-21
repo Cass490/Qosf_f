@@ -20,14 +20,16 @@ class angle_encode:
                 theta = datapoint[i] * np.pi / 2
                 state_i = np.array([np.cos(theta), np.sin(theta)])
                 initial_state = np.kron(initial_state, state_i)#kronecker product
+
             if len(initial_state) != 2**self.n_sites:
                raise ValueError(f"Encoded state has incorrect size: {len(initial_state)} (expected {2**self.n_sites})")
+            
             norm = np.sum(np.abs(initial_state)**2)
             if not np.isclose(norm, 1.0, rtol=1e-5, atol=1e-5):
               initial_state = initial_state / np.sqrt(norm)
             states.append(initial_state)
         
-      return np.array(states)
+      return np.array(states), None
 
 class amp_encode:
     def __init__(self, n_sites):
@@ -53,7 +55,7 @@ class amp_encode:
         if len(padded_datapoint) != self.max_features:
             raise ValueError(f"Encoded state has incorrect size: {len(padded_datapoint)} (expected {self.max_features})")
         states.append(padded_datapoint)
-      return np.array(states)
+      return np.array(states), None
 
 class global_encode:
     def __init__(self, n_sites, encoding_type='hamiltonian', base_omega=1.2 , base_V= 1.2, detuning_scale=0.5 , param_scale=0.5):
@@ -170,7 +172,7 @@ class position_encode:
         self.lattice_type = lattice_type
         self.periodic_boundary = periodic_boundary
         
-        # Calculate maximum number of features we can encode
+        #  maximum number of features we can encode
         if dimension == 1:
             # In 1D, can encode Nq-1 features (nearest neighbors)
             self.max_features = n_sites - 1
@@ -183,12 +185,7 @@ class position_encode:
             raise ValueError("Dimension must be 1 or 2")
         
     def get_neighbor_pairs(self):
-        """
-        Get nearest neighbor pairs based on lattice structure.
         
-        Returns:
-            List of tuples with indices of nearest neighbor qubits
-        """
         neighbor_pairs = []
         
         if self.dimension == 1:
@@ -231,15 +228,8 @@ class position_encode:
         return neighbor_pairs
     
     def encode(self, data):
-        """
-        Encode classical data into interaction strength modulations.
+        #interaction_maps: List of dictionaries mapping qubit pairs to interaction strengths
         
-        Args:
-            data: Array of shape (n_samples, n_features)
-            
-        Returns:
-            interaction_maps: List of dictionaries mapping qubit pairs to interaction strengths
-        """
         n_samples = data.shape[0]
         n_features = data.shape[1]
         
@@ -249,7 +239,7 @@ class position_encode:
         
         # Get nearest neighbor pairs
         neighbor_pairs = self.get_neighbor_pairs()
-        n_pairs = len(neighbor_pairs)
+        n_pairs = len(neighbor_pairs)                                                                                      
         
         interaction_maps = []
         
@@ -276,17 +266,8 @@ class position_encode:
         return interaction_maps
     
     def get_hamiltonian_params(self, interaction_maps, base_omega=1.0, detuning=None):
-        """
-        Convert interaction maps to Hamiltonian parameters.
-        
-        Args:
-            interaction_maps: List of interaction maps from encode()
-            base_omega: Base Rabi frequency
-            detuning: Optional array of detuning values for each qubit
-            
-        Returns:
-            hamiltonian_params: List of dictionaries with Hamiltonian parameters
-        """
+        #Convert interaction maps to Hamiltonian parameters.
+     
         n_samples = len(interaction_maps)
         hamiltonian_params = []
         
@@ -311,3 +292,73 @@ class position_encode:
             hamiltonian_params.append(params)
         
         return hamiltonian_params
+class  local_encode:
+        
+        def __init__(self, n_sites, dimension=1, base_omega=1.0, encoding_scale=0.5):
+            self.n_sites = n_sites
+            self.dimension = dimension
+            self.base_omega = base_omega
+            self.encoding_scale = encoding_scale
+            self.max_features = 2**n_sites
+
+        def encode(self, data):
+            n_samples = data.shape[0]
+            n_features = data.shape[1]
+            initial_states =[]
+            hamil_params=[]
+            for i  in range (n_samples):
+                #creating ground state for the sample
+                state = np.zeros(self.max_features, dtype=complex)
+                state[0] = 1.0
+                initial_states.append(state)
+
+                sample= data[i]
+                omega_values= np.ones(self.n_sites) * self.base_omega #for rabi freq
+                detuning_values= np.zeros(self.n_sites)
+
+                # First half of features modify omega values (one per site)
+                for j in range(min(n_features, self.n_sites)):
+                    #modify rabi freq aka omega based on the features
+                    omega_values[j] = self.base_omega *(1+self.encoding_scale * sample[j])  #mulplicative scaling
+
+                remaining_features= n_features - self.n_sites
+                for j in range (min(remaining_features, self.n_sites)):
+                    if j+ self.n_sites < n_features:
+                        detuning_values[j] = self.encoding_scale * sample[j+ self.n_sites]
+                params={
+                    'omega': omega_values,
+                    'detuning_values': detuning_values,
+                     'V':1.0 #global interaction strength
+                }
+                hamil_params.append(params)
+            return np.array(initial_states), hamil_params
+        
+        def get_hamiltonian_params(self, omega_maps, base_V=1.0, detuning=None):
+        # Convert interaction maps to Hamiltonian parameters.
+          n_samples = len(omega_maps)
+          hamiltonian_params = []
+        
+          for i in range(n_samples):
+            omega_map = omega_maps[i]
+            
+            # Create parameter dictionary
+            params = {
+                'V': base_V,
+                'omega': omega_map
+            }
+            
+            # Add detuning if provided
+            if detuning is not None:
+                if i < len(detuning):
+                    params['detuning_values'] = detuning[i]
+                else:
+                    params['detuning_values'] = np.zeros(self.n_sites)
+            else:
+                params['detuning_values'] = np.zeros(self.n_sites)
+            
+            hamiltonian_params.append(params)
+        
+          return hamiltonian_params
+
+        
+            
